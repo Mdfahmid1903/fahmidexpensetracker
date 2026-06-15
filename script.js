@@ -19,7 +19,7 @@ function loadTransactions() {
 
 // ====== State ======
 let transactions = loadTransactions();
-let editingId = null; // ⭐ নতুন: কোন transaction edit হচ্ছে
+let editingId = null;
 
 // ====== Event listeners ======
 transactionFormEl.addEventListener("submit", addTransaction);
@@ -28,7 +28,7 @@ transactionFormEl.addEventListener("submit", addTransaction);
 function addTransaction(e) {
   e.preventDefault();
   const description = descriptionEl.value.trim();
-  const amount = parseFloat(amountEl.value);
+  const amount = parseFloat(parseFloat(amountEl.value).toFixed(2));
 
   if (description === "" || isNaN(amount)) {
     alert("Please enter a description and a valid amount.");
@@ -63,9 +63,7 @@ function createTransactionElement(transaction) {
   li.classList.add("transaction");
   li.classList.add(transaction.amount > 0 ? "income" : "expense");
 
-  // ⭐ Check: এই transaction edit mode এ আছে কিনা
   if (editingId === transaction.id) {
-    // ===== EDIT MODE =====
     li.classList.add("editing");
     li.innerHTML = `
       <input 
@@ -77,6 +75,7 @@ function createTransactionElement(transaction) {
       <span>
         <input 
           type="number" 
+          step="0.01"
           class="edit-input amount" 
           id="edit-amount-${transaction.id}" 
           value="${transaction.amount}"
@@ -86,7 +85,6 @@ function createTransactionElement(transaction) {
       </span>
     `;
   } else {
-    // ===== NORMAL MODE =====
     li.innerHTML = `
       <span>${transaction.description}</span>
       <span>
@@ -134,33 +132,31 @@ function removeTransaction(id) {
   updateSummary();
 }
 
-// ⭐ ====== Start Edit Mode ======
+// ====== Start Edit Mode ======
 function startEdit(id) {
   editingId = id;
   updateTransactionList();
 }
 
-// ⭐ ====== Cancel Edit ======
+// ====== Cancel Edit ======
 function cancelEdit() {
   editingId = null;
   updateTransactionList();
 }
 
-// ⭐ ====== Save Edited Transaction ======
+// ====== Save Edited Transaction ======
 function saveEdit(id) {
   const descInput = document.getElementById(`edit-desc-${id}`);
   const amountInput = document.getElementById(`edit-amount-${id}`);
 
   const newDescription = descInput.value.trim();
-  const newAmount = parseFloat(amountInput.value);
+  const newAmount = parseFloat(parseFloat(amountInput.value).toFixed(2));
 
-  // Validation
   if (newDescription === "" || isNaN(newAmount)) {
     alert("Please enter a valid description and amount.");
     return;
   }
 
-  // Update the transaction in array
   transactions = transactions.map((transaction) => {
     if (transaction.id === id) {
       return {
